@@ -4,13 +4,17 @@ import { Request, Response, NextFunction } from 'express';
 
 const logger = getLogger('routes/index');
 
-//improt controller
+//import controllers
 import { getUniversityMatches } from '../controllers/matchController';
+import { searchUniversities } from '../controllers/searchController';
 
 const router = express.Router();
 
 // Matching routes - /api/match
 router.post('/match', getUniversityMatches);
+
+// Search routes - /api/search
+router.get('/search', searchUniversities);
 
 // University routes - /api/universities
 // router.use('/', universityRoutes);
