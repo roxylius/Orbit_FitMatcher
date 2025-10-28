@@ -1,7 +1,7 @@
 const log4js = require('log4js');
 
 //load log4js configuration from json config file
-const config = require('../configs/log4js-config.json');
+const config = require('../config/log4js-config.json');
 log4js.configure(config);
 
 /**
@@ -13,6 +13,7 @@ log4js.configure(config);
  */
 function getLogger(fileName:string) {
     const logger = log4js.getLogger(fileName);
+
     return {
         debug: (method:string, msg:string) => logger.debug(`[${method}] ${msg}`),
         info: (method:string, msg:string) => logger.info(`[${method}] ${msg}`),
@@ -21,7 +22,7 @@ function getLogger(fileName:string) {
     };
 }
 
-module.exports = { getLogger };
+export default getLogger;
 
 
 // Usage elsewhere:

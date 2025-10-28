@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS universities (
     program_type VARCHAR(100) NOT NULL,
     location_city VARCHAR(100),
     location_country VARCHAR(100),
+    location_region VARCHAR(100),
     ranking INTEGER,
     acceptance_rate NUMERIC(5,2),
     median_gmat INTEGER,
@@ -17,6 +18,10 @@ CREATE TABLE IF NOT EXISTS universities (
     avg_starting_salary_usd INTEGER,
     scholarship_available BOOLEAN DEFAULT FALSE,
     visa_sponsorship BOOLEAN DEFAULT FALSE,
+    primary_industry VARCHAR(100),
+    secondary_industries TEXT[],
+    international_student_ratio NUMERIC(5,2),
+    post_study_work_support VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
