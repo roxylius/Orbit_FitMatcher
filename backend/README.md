@@ -2,24 +2,11 @@
 
 This is a Node.js TypeScript backend project.
 
-## Project Structure
-
-```
-backend
-├── src
-│   ├── app.ts          # Entry point of the application
-│   └── types
-│       └── index.ts    # Type definitions for the application
-├── package.json         # npm configuration file
-├── tsconfig.json        # TypeScript configuration file
-└── README.md            # Project documentation
-```
-
 ## Setup Instructions
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
+   git clone https://github.com/roxylius/Orbit_FitMatcher.git
    ```
 
 2. Navigate to the backend directory:
@@ -39,7 +26,7 @@ backend
 
 5. Start the application:
    ```
-   npm start
+   npm run dev
    ```
 
 ## Usage Guidelines
