@@ -62,6 +62,7 @@ const FitMatcher = () => {
   const response = await fetch(`${API_BASE_URL}/match`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 

@@ -50,7 +50,9 @@ const Search = () => {
         if (value) params.append(key, value);
       });
 
-  const response = await fetch(`${API_BASE_URL}/search?${params.toString()}`);
+  const response = await fetch(`${API_BASE_URL}/search?${params.toString()}`, {
+        credentials: 'include',
+      });
       const data = await response.json();
       
       console.log('Search results:', data);
