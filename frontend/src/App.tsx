@@ -2,16 +2,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import DashboardLayout from '@/layouts/DashboardLayout';
 import FitMatcher from '@/pages/FitMatcher';
 import Search from '@/pages/Search';
-import Login from '@/pages/Login';
-import Signup from '@/pages/Signup';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
+import SavedUniversities from '@/pages/SavedUniversities';
+import { Login, Signup, ForgotPassword, ResetPassword } from '@/pages/auth';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { AuthProvider } from '@/hooks/useAuth';
+import { AppProvider } from '@/contexts';
 
 function App() {
   return (
-    <AuthProvider>
+    <AppProvider>
       <Router>
         <Routes>
           {/* Public routes */}
@@ -29,10 +27,11 @@ function App() {
             <Route index element={<Navigate to="/search" replace />} />
             <Route path="search" element={<Search />} />
             <Route path="fit-matcher" element={<FitMatcher />} />
+            <Route path="saved" element={<SavedUniversities />} />
           </Route>
         </Routes>
       </Router>
-    </AuthProvider>
+    </AppProvider>
   );
 }
 

@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { API_BASE_URL } from '@/lib/config';
+import UniversityResultCard from '@/components/UniversityResultCard';
+import { useSearch } from '@/contexts';
 
 interface FormData {
   gmat_score: string;
@@ -20,6 +22,8 @@ interface FormData {
 }
 
 const FitMatcher = () => {
+  const { matchResults, setMatchResults, hasMatched, setHasMatched } = useSearch();
+  
   const [formData, setFormData] = useState<FormData>({
     gmat_score: '',
     gre_score: '',
@@ -69,11 +73,12 @@ const FitMatcher = () => {
       const data = await response.json();
       console.log('Match results:', data);
       
-      // TODO: Navigate to results page or display results
-      alert(`Found ${data.count} matches!`);
+      setMatchResults(data.matches || []);
+      setHasMatched(true);
     } catch (error) {
       console.error('Error:', error);
-      alert('Error fetching matches. Please try again.');
+      setMatchResults([]);
+      setHasMatched(true);
     } finally {
       setLoading(false);
     }
@@ -290,6 +295,37 @@ const FitMatcher = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Match Results Section */}
+      {hasMatched && (
+        <div className="mt-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              Your Matches
+            </h2>
+            <p className="text-slate-600">
+              {matchResults.length === 0 
+                ? 'No matching universities found. Try adjusting your profile details or consider alternative programs.' 
+                : `Found ${matchResults.length} ${matchResults.length === 1 ? 'match' : 'matches'} based on your profile`
+              }
+            </p>
+          </div>
+
+          {matchResults.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {matchResults.map((match) => (
+                <UniversityResultCard
+                  key={match.university.university_id}
+                  university={match.university}
+                  matchPercentage={match.match_percentage}
+                  category={match.category}
+                  reasons={match.reasons}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

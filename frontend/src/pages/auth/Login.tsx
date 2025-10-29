@@ -1,23 +1,50 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, Loader2, Eye, EyeOff } from 'lucide-react';
 
-const Signup = () => {
+const Login = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
-  const [name, setName] = useState('');
+  const location = useLocation();
+  const { login, user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/search', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
+
+  // Check for success message from password reset
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccess(location.state.message);
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  const handleQuickLogin = () => {
+    setEmail('test@mail.com');
+    setPassword('admin1');
+    // Small delay to show the filled fields before submitting
+    setTimeout(() => {
+      const form = document.querySelector('form');
+      if (form) {
+        form.requestSubmit();
+      }
+    }, 100);
+  };
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -28,7 +55,7 @@ const Signup = () => {
     setError('');
 
     // Validation
-    if (!name || !email || !password || !confirmPassword) {
+    if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
@@ -43,18 +70,13 @@ const Signup = () => {
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      await signup(email, password, name);
+      await login(email, password);
       navigate('/search');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -69,31 +91,44 @@ const Signup = () => {
               <Target className="w-8 h-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Join us to discover your ideal university
+            Sign in to find your perfect university match
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Quick Login Button for Testing */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-amber-900">
+                <p className="font-semibold">Demo Account</p>
+                <p className="text-xs text-amber-700">Quick login for testing</p>
+              </div>
+              <Button
+                type="button"
+                onClick={handleQuickLogin}
+                size="sm"
+                variant="outline"
+                className="bg-white hover:bg-amber-50 border-amber-300 text-amber-900"
+                disabled={loading}
+              >
+                Quick Login
+              </Button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            {success && (
+              <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+                {success}
+              </div>
+            )}
+            
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                 {error}
               </div>
             )}
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={loading}
-                className="h-11"
-              />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -133,34 +168,15 @@ const Signup = () => {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-500">Minimum 6 characters</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={loading}
-                  className="h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
-                  disabled={loading}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
+            <div className="text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
 
             <Button
@@ -171,17 +187,17 @@ const Signup = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating account...
+                  Signing in...
                 </>
               ) : (
-                'Sign Up'
+                'Sign In'
               )}
             </Button>
 
             <p className="text-center text-sm text-slate-600">
-              Already have an account?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
-                Sign in
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
+                Sign up
               </Link>
             </p>
           </form>
@@ -191,4 +207,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Login;

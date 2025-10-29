@@ -1,13 +1,14 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Target, Menu, X, LogOut, User } from 'lucide-react';
+import { Search, Target, Menu, X, LogOut, User, Bookmark } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, useSavedUniversities } from '@/contexts';
 import { Button } from '@/components/ui/button';
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { savedUniversities } = useSavedUniversities();
   const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -19,14 +20,20 @@ const Sidebar = () => {
 
   const menuItems = [
     {
+      path: '/fit-matcher',
+      icon: Target,
+      label: 'Fit Matcher',
+    },
+    {
       path: '/search',
       icon: Search,
       label: 'Search Universities',
     },
     {
-      path: '/fit-matcher',
-      icon: Target,
-      label: 'Fit Matcher',
+      path: '/saved',
+      icon: Bookmark,
+      label: 'Saved Universities',
+      badge: savedUniversities.length > 0 ? savedUniversities.length : undefined,
     },
   ];
 
@@ -79,12 +86,17 @@ const Sidebar = () => {
                     onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                       active
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105'
-                        : 'text-slate-300 hover:bg-slate-700/50 hover:text-white hover:translate-x-1'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 !text-white shadow-lg shadow-blue-500/30 scale-105'
+                        : 'text-slate-300 hover:bg-slate-700/50 hover:!text-white hover:translate-x-1'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium flex-1">{item.label}</span>
+                    {item.badge && (
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-500 px-1.5 text-xs font-bold text-white">
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );

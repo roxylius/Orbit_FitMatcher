@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { API_BASE_URL } from '@/lib/config';
+import UniversityResultCard from '@/components/UniversityResultCard';
+import { useSearch } from '@/contexts';
 
 interface SearchFilters {
   program: string;
@@ -22,6 +24,8 @@ interface SearchFilters {
 }
 
 const Search = () => {
+  const { searchResults, setSearchResults, hasSearched, setHasSearched, clearSearchResults } = useSearch();
+  
   const [filters, setFilters] = useState<SearchFilters>({
     program: '',
     location_country: '',
@@ -56,12 +60,12 @@ const Search = () => {
       const data = await response.json();
       
       console.log('Search results:', data);
-      alert(`Found ${data.count} universities!`);
-      
-      // TODO: Display results in a table/grid
+      setSearchResults(data.universities || []);
+      setHasSearched(true);
     } catch (error) {
       console.error('Error:', error);
-      alert('Error searching universities. Please try again.');
+      setSearchResults([]);
+      setHasSearched(true);
     } finally {
       setLoading(false);
     }
@@ -82,6 +86,7 @@ const Search = () => {
       sort_by: 'ranking',
       order: 'asc',
     });
+    clearSearchResults();
   };
 
   return (
@@ -318,6 +323,34 @@ const Search = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Results Section */}
+      {hasSearched && (
+        <div className="mt-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              Search Results
+            </h2>
+            <p className="text-slate-600">
+              {searchResults.length === 0 
+                ? 'No universities found matching your criteria. Try adjusting your filters.' 
+                : `Showing ${searchResults.length} ${searchResults.length === 1 ? 'university' : 'universities'}`
+              }
+            </p>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {searchResults.map((university) => (
+                <UniversityResultCard
+                  key={university.university_id}
+                  university={university}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

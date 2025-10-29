@@ -8,8 +8,10 @@
    - Login returns: `{ message, user }`
    - Signup returns: `{ message, userObj }`
 3. **Incorrect user ID field** → Changed from `user.id` to `user._id` (MongoDB ObjectId)
-4. **Non-existent `/api/auth/me` endpoint** → Removed auto-check (backend doesn't have this endpoint)
+4. **Session persistence broken** → Now uses `/api/auth/verify` endpoint to restore auth on refresh
 5. **Missing console logs** → Added debug logging for all auth operations
+6. **Auth files organization** → Moved auth pages to `src/pages/auth/` folder
+7. **Password visibility toggle** → Added eye icon to show/hide passwords in all auth forms
 
 ### API Endpoints Now Being Called:
 ✅ `POST ${API_BASE_URL}/auth/signup` - User registration  
@@ -31,12 +33,13 @@ Successfully integrated session-based authentication into the University Matcher
 
 ## Files Created
 
-### 1. Authentication Hook
-**File:** `src/hooks/useAuth.tsx`
+### 1. Authentication Context
+**File:** `src/contexts/AuthContext.tsx` (formerly `src/hooks/useAuth.tsx`)
 - Created AuthProvider context with user state management
 - Implements login, signup, logout functions
-- Auto-checks auth status on mount via `/api/auth/me`
+- Auto-checks auth status on mount via `/api/auth/verify` endpoint
 - All API calls include `credentials: 'include'` for session cookies
+- Persists user session across page refreshes
 
 ### 2. Protected Route Component
 **File:** `src/components/ProtectedRoute.tsx`
@@ -46,29 +49,37 @@ Successfully integrated session-based authentication into the University Matcher
 
 ### 3. Auth Pages (with shadcn/ui styling)
 
-**File:** `src/pages/Login.tsx`
+**Folder:** `src/pages/auth/`
+
+**File:** `src/pages/auth/Login.tsx`
 - Email/password login form
 - Inline validation (email format, 6+ char password)
+- Password visibility toggle (eye icon)
 - Success message display for password reset
 - Link to forgot password and signup
 
-**File:** `src/pages/Signup.tsx`
+**File:** `src/pages/auth/Signup.tsx`
 - Registration form with name, email, password, confirm password
 - Inline validation with error messages
+- Password visibility toggles for both password fields
 - Password match validation
 - Link to login page
 
-**File:** `src/pages/ForgotPassword.tsx`
+**File:** `src/pages/auth/ForgotPassword.tsx`
 - Email input for password reset
 - Sends 6-digit OTP via backend API
 - Success screen with instructions
 - Links to reset password and login
 
-**File:** `src/pages/ResetPassword.tsx`
+**File:** `src/pages/auth/ResetPassword.tsx`
 - OTP input (6-digit numeric, 100000-999999)
 - New password input with confirmation
+- Password visibility toggles for both password fields
 - 10-minute expiration notice
 - Redirects to login on success
+
+**File:** `src/pages/auth/index.ts`
+- Barrel export for all auth pages
 
 ## Files Modified
 
@@ -76,6 +87,7 @@ Successfully integrated session-based authentication into the University Matcher
 - Wrapped entire app with `<AuthProvider>`
 - Added public routes (login, signup, forgot-password, reset-password)
 - Wrapped dashboard routes with `<ProtectedRoute>`
+- Imports auth pages from `@/pages/auth`
 - Route structure:
   ```
   - /login (public)
@@ -122,13 +134,15 @@ Successfully integrated session-based authentication into the University Matcher
 5. POST `/api/auth/reset-password` with OTP and new password
 6. Success redirect to `/login` with success message
 
-### Protected Routes
-1. On mount, AuthProvider checks `/api/auth/me`
-2. If authenticated, user object loaded
-3. ProtectedRoute checks user state
-4. If null, redirect to `/login`
-5. If loading, show spinner
-6. If authenticated, render protected content
+### Protected Routes & Session Persistence
+1. On mount, AuthProvider calls `GET /api/auth/verify` with credentials
+2. If authenticated (200 response), user object loaded from session
+3. If not authenticated (401 response), user remains null
+4. ProtectedRoute checks user state:
+   - If user is null → redirect to `/login`
+   - If loading → show spinner
+   - If authenticated → render protected content
+5. **Session persists across page refreshes** via session cookie
 
 ### Logout Flow
 1. User clicks logout button in sidebar
