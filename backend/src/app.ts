@@ -8,7 +8,7 @@ import routes from './routes';
 const app = express();
 
 //set up middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:7501'], credentials: true, methods: ['GET', 'POST', 'DELETE','PUT'] }));
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'], credentials: true, methods: ['GET', 'POST', 'DELETE','PUT'] }));
 app.use(bodyParser.urlencoded({ extended: true })); // read req body
 app.use(bodyParser.json()); // parse JSON bodies
 

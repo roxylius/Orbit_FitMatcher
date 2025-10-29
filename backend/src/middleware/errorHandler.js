@@ -1,3 +1,6 @@
+import getLogger from "../utils/logger";
+
+const logger = getLogger('errorHandler');
 /**
  * Error Handler Middleware
  * Centralized error handling for the application
@@ -5,7 +8,8 @@
 
 const errorHandler = (err, req, res, next) => {
   // Log error for debugging
-  console.error(err.stack);
+  logger.error(`ErrorHandler: ${err.message}`, { stack: err.stack });
+
 
   // Default error status and message
   const statusCode = err.statusCode || 500;

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import pool from '../config/db';
 import getLogger from '../utils/logger';
+import { searchUniversities as searchUniversitiesService } from '../services/searchService';
+import type { SearchFilters, SearchOptions } from '../services/searchService';
 
 const logger = getLogger('searchController');
 
@@ -31,249 +33,110 @@ export const searchUniversities = async (req: Request, res: Response) => {
       offset,
     } = req.query;
 
-    // Build dynamic query
-    let query = 'SELECT * FROM universities WHERE 1=1';
-    const queryParams: any[] = [];
-    let paramIndex = 1;
+    // Parse and validate filters
+    const filters: SearchFilters = {};
 
-    // HIGH PRIORITY: Program Type (70% search start)
     if (program) {
-      query += ` AND program_type = $${paramIndex}`;
-      queryParams.push(program);
-      paramIndex++;
-      logger.info('searchUniversities', `Filter: program_type = ${program}`);
+      filters.program = program as string;
     }
 
-    // HIGH PRIORITY: Location/Country (50% decision factor)
     if (location_country) {
-      query += ` AND location_country ILIKE $${paramIndex}`;
-      queryParams.push(`%${location_country}%`);
-      paramIndex++;
-      logger.info('searchUniversities', `Filter: location_country LIKE ${location_country}`);
+      filters.location_country = location_country as string;
     }
 
-    // HIGH PRIORITY: Acceptance Rate Range (Competitiveness balance)
     if (min_acceptance) {
       const minRate = parseFloat(min_acceptance as string);
-      if (!isNaN(minRate)) {
-        query += ` AND acceptance_rate >= $${paramIndex}`;
-        queryParams.push(minRate);
-        paramIndex++;
-        logger.info('searchUniversities', `Filter: acceptance_rate >= ${minRate}`);
+      if (!isNaN(minRate) && minRate >= 0 && minRate <= 100) {
+        filters.min_acceptance = minRate;
+      } else {
+        logger.warn('searchUniversities', `Invalid min_acceptance: ${min_acceptance}`);
       }
     }
 
     if (max_acceptance) {
       const maxRate = parseFloat(max_acceptance as string);
-      if (!isNaN(maxRate)) {
-        query += ` AND acceptance_rate <= $${paramIndex}`;
-        queryParams.push(maxRate);
-        paramIndex++;
-        logger.info('searchUniversities', `Filter: acceptance_rate <= ${maxRate}`);
+      if (!isNaN(maxRate) && maxRate >= 0 && maxRate <= 100) {
+        filters.max_acceptance = maxRate;
+      } else {
+        logger.warn('searchUniversities', `Invalid max_acceptance: ${max_acceptance}`);
       }
     }
 
-    // HIGH PRIORITY: Visa Sponsorship (International barrier)
     if (visa_sponsorship !== undefined) {
-      const visaRequired = visa_sponsorship === 'true' || visa_sponsorship === '1';
-      query += ` AND visa_sponsorship = $${paramIndex}`;
-      queryParams.push(visaRequired);
-      paramIndex++;
-      logger.info('searchUniversities', `Filter: visa_sponsorship = ${visaRequired}`);
+      filters.visa_sponsorship = visa_sponsorship === 'true' || visa_sponsorship === '1';
     }
 
-    // MEDIUM PRIORITY: Tuition Range (Affordability)
     if (min_tuition) {
       const minTuitionVal = parseInt(min_tuition as string);
-      if (!isNaN(minTuitionVal)) {
-        query += ` AND tuition_usd >= $${paramIndex}`;
-        queryParams.push(minTuitionVal);
-        paramIndex++;
-        logger.info('searchUniversities', `Filter: tuition_usd >= ${minTuitionVal}`);
+      if (!isNaN(minTuitionVal) && minTuitionVal >= 0) {
+        filters.min_tuition = minTuitionVal;
+      } else {
+        logger.warn('searchUniversities', `Invalid min_tuition: ${min_tuition}`);
       }
     }
 
     if (max_tuition) {
       const maxTuitionVal = parseInt(max_tuition as string);
-      if (!isNaN(maxTuitionVal)) {
-        query += ` AND tuition_usd <= $${paramIndex}`;
-        queryParams.push(maxTuitionVal);
-        paramIndex++;
-        logger.info('searchUniversities', `Filter: tuition_usd <= ${maxTuitionVal}`);
+      if (!isNaN(maxTuitionVal) && maxTuitionVal >= 0) {
+        filters.max_tuition = maxTuitionVal;
+      } else {
+        logger.warn('searchUniversities', `Invalid max_tuition: ${max_tuition}`);
       }
     }
 
-    // MEDIUM PRIORITY: Ranking Range (Prestige)
     if (min_ranking) {
       const minRank = parseInt(min_ranking as string);
-      if (!isNaN(minRank)) {
-        query += ` AND ranking >= $${paramIndex}`;
-        queryParams.push(minRank);
-        paramIndex++;
-        logger.info('searchUniversities', `Filter: ranking >= ${minRank}`);
+      if (!isNaN(minRank) && minRank > 0) {
+        filters.min_ranking = minRank;
+      } else {
+        logger.warn('searchUniversities', `Invalid min_ranking: ${min_ranking}`);
       }
     }
 
     if (max_ranking) {
       const maxRank = parseInt(max_ranking as string);
-      if (!isNaN(maxRank)) {
-        query += ` AND ranking <= $${paramIndex}`;
-        queryParams.push(maxRank);
-        paramIndex++;
-        logger.info('searchUniversities', `Filter: ranking <= ${maxRank}`);
+      if (!isNaN(maxRank) && maxRank > 0) {
+        filters.max_ranking = maxRank;
+      } else {
+        logger.warn('searchUniversities', `Invalid max_ranking: ${max_ranking}`);
       }
     }
 
-    // LOW PRIORITY: Post-Study Work Support (Career outcomes)
     if (post_study_work) {
-      query += ` AND post_study_work_support ILIKE $${paramIndex}`;
-      queryParams.push(`%${post_study_work}%`);
-      paramIndex++;
-      logger.info('searchUniversities', `Filter: post_study_work_support LIKE ${post_study_work}`);
+      filters.post_study_work = post_study_work as string;
     }
 
-    // LOW PRIORITY: Scholarships (Financial access)
     if (has_scholarships !== undefined) {
-      const hasScholarship = has_scholarships === 'true' || has_scholarships === '1';
-      query += ` AND scholarship_available = $${paramIndex}`;
-      queryParams.push(hasScholarship);
-      paramIndex++;
-      logger.info('searchUniversities', `Filter: scholarship_available = ${hasScholarship}`);
+      filters.has_scholarships = has_scholarships === 'true' || has_scholarships === '1';
     }
 
-    // Sorting
-    const allowedSortFields = [
-      'ranking',
-      'acceptance_rate',
-      'tuition_usd',
-      'avg_starting_salary_usd',
-      'name',
-    ];
-    const sortField = allowedSortFields.includes(sort_by as string)
-      ? sort_by
-      : 'ranking';
-    const sortOrder = order === 'desc' ? 'DESC' : 'ASC';
-    query += ` ORDER BY ${sortField} ${sortOrder} NULLS LAST`;
-    logger.info('searchUniversities', `Sorting by: ${sortField} ${sortOrder}`);
+    // Parse options
+    const options: SearchOptions = {
+      sort_by: sort_by as string,
+      order: (order === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc',
+      limit: limit ? Math.min(parseInt(limit as string) || 50, 100) : 50,
+      offset: offset ? parseInt(offset as string) || 0 : 0,
+    };
 
-    // Pagination
-    const limitVal = Math.min(parseInt(limit as string) || 50, 100); // Max 100 results
-    const offsetVal = parseInt(offset as string) || 0;
-    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    queryParams.push(limitVal, offsetVal);
-    paramIndex += 2;
-    logger.info('searchUniversities', `Pagination: LIMIT ${limitVal} OFFSET ${offsetVal}`);
+    logger.info('searchUniversities', 'Validation passed - Calling search service');
 
-    // Execute query
-    logger.info('searchUniversities', `Executing search query with ${queryParams.length} parameters`);
-    const result = await pool.query(query, queryParams);
-    const universities = result.rows;
+    // Call search service
+    const result = await searchUniversitiesService(pool, filters, options);
 
-    // Get total count (for pagination metadata)
-    let countQuery = 'SELECT COUNT(*) FROM universities WHERE 1=1';
-    const countParams: any[] = [];
-    let countParamIndex = 1;
+    const page = Math.floor(options.offset! / options.limit!) + 1;
+    const pages = Math.ceil(result.total / options.limit!);
 
-    // Re-apply filters for count (without ORDER BY, LIMIT, OFFSET)
-    if (program) {
-      countQuery += ` AND program_type = $${countParamIndex}`;
-      countParams.push(program);
-      countParamIndex++;
-    }
-    if (location_country) {
-      countQuery += ` AND location_country ILIKE $${countParamIndex}`;
-      countParams.push(`%${location_country}%`);
-      countParamIndex++;
-    }
-    if (min_acceptance) {
-      const minRate = parseFloat(min_acceptance as string);
-      if (!isNaN(minRate)) {
-        countQuery += ` AND acceptance_rate >= $${countParamIndex}`;
-        countParams.push(minRate);
-        countParamIndex++;
-      }
-    }
-    if (max_acceptance) {
-      const maxRate = parseFloat(max_acceptance as string);
-      if (!isNaN(maxRate)) {
-        countQuery += ` AND acceptance_rate <= $${countParamIndex}`;
-        countParams.push(maxRate);
-        countParamIndex++;
-      }
-    }
-    if (visa_sponsorship !== undefined) {
-      const visaRequired = visa_sponsorship === 'true' || visa_sponsorship === '1';
-      countQuery += ` AND visa_sponsorship = $${countParamIndex}`;
-      countParams.push(visaRequired);
-      countParamIndex++;
-    }
-    if (min_tuition) {
-      const minTuitionVal = parseInt(min_tuition as string);
-      if (!isNaN(minTuitionVal)) {
-        countQuery += ` AND tuition_usd >= $${countParamIndex}`;
-        countParams.push(minTuitionVal);
-        countParamIndex++;
-      }
-    }
-    if (max_tuition) {
-      const maxTuitionVal = parseInt(max_tuition as string);
-      if (!isNaN(maxTuitionVal)) {
-        countQuery += ` AND tuition_usd <= $${countParamIndex}`;
-        countParams.push(maxTuitionVal);
-        countParamIndex++;
-      }
-    }
-    if (min_ranking) {
-      const minRank = parseInt(min_ranking as string);
-      if (!isNaN(minRank)) {
-        countQuery += ` AND ranking >= $${countParamIndex}`;
-        countParams.push(minRank);
-        countParamIndex++;
-      }
-    }
-    if (max_ranking) {
-      const maxRank = parseInt(max_ranking as string);
-      if (!isNaN(maxRank)) {
-        countQuery += ` AND ranking <= $${countParamIndex}`;
-        countParams.push(maxRank);
-        countParamIndex++;
-      }
-    }
-    if (post_study_work) {
-      countQuery += ` AND post_study_work_support ILIKE $${countParamIndex}`;
-      countParams.push(`%${post_study_work}%`);
-      countParamIndex++;
-    }
-    if (has_scholarships !== undefined) {
-      const hasScholarship = has_scholarships === 'true' || has_scholarships === '1';
-      countQuery += ` AND scholarship_available = $${countParamIndex}`;
-      countParams.push(hasScholarship);
-      countParamIndex++;
-    }
-
-    const countResult = await pool.query(countQuery, countParams);
-    const totalCount = parseInt(countResult.rows[0].count);
-
-    logger.info('searchUniversities', `EXITING - Returning ${universities.length} results (${totalCount} total)`);
+    logger.info('searchUniversities', `EXITING - Returning ${result.universities.length} results`);
 
     return res.status(200).json({
       success: true,
-      count: universities.length,
-      total: totalCount,
-      page: Math.floor(offsetVal / limitVal) + 1,
-      pages: Math.ceil(totalCount / limitVal),
-      filters: {
-        program,
-        location_country,
-        acceptance_rate: { min: min_acceptance, max: max_acceptance },
-        visa_sponsorship,
-        tuition_range: { min: min_tuition, max: max_tuition },
-        ranking_range: { min: min_ranking, max: max_ranking },
-        post_study_work,
-        has_scholarships,
-      },
-      sort: { field: sortField, order: sortOrder },
-      universities,
+      count: result.universities.length,
+      total: result.total,
+      page,
+      pages,
+      filters,
+      sort: { field: options.sort_by || 'ranking', order: options.order },
+      universities: result.universities,
     });
   } catch (error) {
     logger.error('searchUniversities', `EXITING - Error occurred: ${error}`);

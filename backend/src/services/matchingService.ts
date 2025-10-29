@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { University, UserProfile, MatchResult } from '../types';
-import { categorizeMatch } from '../utils/helpers/matchHelpers';
-import { getNormalizedTestScore, normalizeGpa } from '../utils/helpers/scoreNormalization';
+import { categorizeMatch } from '../utils/matchHelpers';
+import { getNormalizedTestScore, normalizeGpa } from '../utils/scoreNormalization';
 import getLogger from '../utils/logger';
 
 const logger = getLogger('matchingService');
