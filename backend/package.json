@@ -14,7 +14,8 @@
     "dotenv": "^17.2.3",
     "express": "^4.17.1",
     "jest": "^30.2.0",
-    "log4js": "^6.9.1"
+    "log4js": "^6.9.1",
+    "nodemailer": "^7.0.10"
   },
   "devDependencies": {
     "typescript": "^4.5.4",

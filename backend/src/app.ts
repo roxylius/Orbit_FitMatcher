@@ -16,7 +16,7 @@ const app = express();
 const logger = getLogger('app.ts');
 
 //set up middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'], credentials: true, methods: ['GET', 'POST', 'DELETE','PUT'] }));
+app.use(cors({ origin: ['http://localhost:5173', 'https://xbox-song-clerk-gloves.trycloudflare.com'], credentials: true, methods: ['GET', 'POST', 'DELETE','PUT'] }));
 app.use(bodyParser.urlencoded({
    extended: true })); // read req body
 app.use(bodyParser.json()); // parse JSON bodies
@@ -52,20 +52,14 @@ app.use(passport.session());
 
 import User from './models/user';
 
+// Configure Passport Local Strategy (provided by passport-local-mongoose)
+passport.use(User.createStrategy());
+
 // used to serialize the user for the session
-passport.serializeUser(function (user: any, done) {
-    done(null, user._id);
-});
+passport.serializeUser(User.serializeUser());
 
 // used to deserialize the user
-passport.deserializeUser(async function (id, done) {
-    try {
-        const user = await User.findById(id).exec();
-        done(null, user);
-    } catch (error) {
-        done(error, null);
-    }
-});
+passport.deserializeUser(User.deserializeUser());
 
 // Health check route
 app.get('/health', (req, res) => {
