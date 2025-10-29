@@ -72,22 +72,19 @@ Production: TBD
         "program_type": "MBA",
         "location_city": "Boston",
         "location_country": "USA",
-        "location_region": "Massachusetts",
+        "location_region": "North America",
         "ranking": 1,
         "acceptance_rate": 9.0,
         "median_gmat": 730,
         "median_gre": 328,
         "median_gpa": 3.70,
         "avg_work_experience": 4.7,
-        "class_size": 940,
         "tuition_usd": 73440,
         "avg_starting_salary_usd": 175000,
         "scholarship_available": true,
         "visa_sponsorship": true,
         "primary_industry": "Consulting",
-        "secondary_industries": ["Finance", "Tech", "Healthcare"],
-        "international_student_ratio": 36.0,
-        "post_study_work_support": "OPT, CPT, H1B sponsorship"
+        "post_study_work_support": "Strong"
       },
       "match_percentage": 78.5,
       "category": "Target",
@@ -95,9 +92,8 @@ Production: TBD
         "Your GMAT score (700) is close to the median (730) - solid competitive position.",
         "Your work experience (3 years) aligns well with the average (4.7 years).",
         "Visa sponsorship available for international students.",
-        "Strong industry alignment with Tech sector.",
-        "Very competitive (9.0% acceptance rate).",
-        "High international student population (36.0%) - diverse environment."
+        "Strong industry alignment with Consulting sector.",
+        "Very competitive (9.0% acceptance rate)."
       ]
     }
   ]
@@ -196,22 +192,19 @@ GET /api/search?location_country=Canada&has_scholarships=true
       "program_type": "MBA",
       "location_city": "Boston",
       "location_country": "USA",
-      "location_region": "Massachusetts",
+      "location_region": "North America",
       "ranking": 1,
       "acceptance_rate": 9.0,
       "median_gmat": 730,
       "median_gre": 328,
       "median_gpa": 3.70,
       "avg_work_experience": 4.7,
-      "class_size": 940,
       "tuition_usd": 73440,
       "avg_starting_salary_usd": 175000,
       "scholarship_available": true,
       "visa_sponsorship": true,
       "primary_industry": "Consulting",
-      "secondary_industries": ["Finance", "Tech", "Healthcare"],
-      "international_student_ratio": 36.0,
-      "post_study_work_support": "OPT, CPT, H1B sponsorship"
+      "post_study_work_support": "Strong"
     }
   ]
 }
@@ -227,7 +220,46 @@ GET /api/search?location_country=Canada&has_scholarships=true
 
 ---
 
+### 4. Metadata for Autocomplete (GET)
+**GET** `/api/metadata`
+
+**Description:** Retrieve normalized lists of program types, countries, and industries to power dropdown suggestions and maintain data consistency between frontend and backend.
+
+**Query Parameters:** None
+
+**Response:**
+```json
+{
+  "success": true,
+  "programTypes": ["MBA", "MS Analytics", "MS CS", "MS Finance"],
+  "countries": ["France", "UK", "USA"],
+  "industries": ["Analytics", "Artificial Intelligence", "Consulting", "Cybersecurity", "Data Science", "Entrepreneurship", "Finance", "Healthcare", "Marketing", "Media", "Operations", "Quantitative Finance", "Risk Management", "Robotics", "Social Impact", "Software Engineering", "Sustainability", "Technology"]
+}
+```
+
+**Usage Notes:**
+- Use these arrays to populate dropdowns/autocomplete inputs for `program_type`, `location_country`, and `industry_preference`.
+- The backend queries **normalized lookup tables** (`program_types`, `countries`, `industries`) for authoritative values.
+- These lookup tables are the single source of truth, preventing data inconsistency between frontend and backend.
+- Frontend should cache results per session and refetch periodically (e.g., every 12 hours) to pick up database updates.
+- **Database is now normalized**: Universities table uses foreign keys to these lookup tables instead of denormalized VARCHAR fields.
+- **Important**: Only use values returned by this endpoint to prevent validation errors when submitting forms.
+
+---
+
 ## Data Models
+
+### Database Schema (Normalized)
+
+The database follows a normalized relational design with the following structure:
+
+**Lookup Tables:**
+- `program_types` - Stores distinct program types (MBA, MS CS, MS Finance, MS Analytics)
+- `countries` - Stores countries with regions (USA, France, UK)
+- `industries` - Stores industries (Consulting, Technology, Finance, etc.)
+
+**Main Table:**
+- `universities` - Contains university data with foreign keys to lookup tables
 
 ### University Schema
 ```typescript
@@ -235,26 +267,28 @@ interface University {
   university_id: number;              // Unique identifier
   name: string;                       // University name
   program_name: string;               // Program name
-  program_type: string;               // MBA, MS CS, MS Finance, etc.
+  program_type: string;               // MBA, MS CS, MS Finance, etc. (joined from program_types table)
   location_city: string | null;      // City
-  location_country: string | null;   // Country
-  location_region: string | null;    // State/Region
+  location_country: string | null;   // Country (joined from countries table)
+  location_region: string | null;    // State/Region (joined from countries table)
   ranking: number | null;            // Global/Program ranking
   acceptance_rate: number | null;    // Percentage (0-100)
   median_gmat: number | null;        // Median GMAT score (200-800)
   median_gre: number | null;         // Median GRE score (260-340)
   median_gpa: number | null;         // Median GPA (0.0-4.0)
   avg_work_experience: number | null; // Average years
-  class_size: number | null;         // Number of students
   tuition_usd: number | null;        // Annual tuition in USD
   avg_starting_salary_usd: number | null; // Average post-graduation salary
   scholarship_available: boolean | null;  // Scholarship availability
   visa_sponsorship: boolean | null;  // Visa sponsorship offered
-  primary_industry: string | null;   // Primary recruiting industry
-  secondary_industries: string[] | null; // Array of industries
-  international_student_ratio: number | null; // Percentage (0-100)
+  primary_industry: string | null;   // Primary recruiting industry (joined from industries table)
   post_study_work_support: string | null; // OPT, CPT, H1B, etc.
 }
+
+// REMOVED FIELDS (no longer in database):
+// - class_size: number | null;
+// - secondary_industries: string[] | null;
+// - international_student_ratio: number | null;
 ```
 
 ### Match Result Schema
@@ -464,26 +498,28 @@ export interface University {
   university_id: number;
   name: string;
   program_name: string;
-  program_type: string;
+  program_type: string;               // Joined from program_types table
   location_city: string | null;
-  location_country: string | null;
-  location_region: string | null;
+  location_country: string | null;    // Joined from countries table
+  location_region: string | null;     // Joined from countries table (region)
   ranking: number | null;
   acceptance_rate: number | null;
   median_gmat: number | null;
   median_gre: number | null;
   median_gpa: number | null;
   avg_work_experience: number | null;
-  class_size: number | null;
   tuition_usd: number | null;
   avg_starting_salary_usd: number | null;
   scholarship_available: boolean | null;
   visa_sponsorship: boolean | null;
-  primary_industry: string | null;
-  secondary_industries: string[] | null;
-  international_student_ratio: number | null;
+  primary_industry: string | null;    // Joined from industries table
   post_study_work_support: string | null;
 }
+
+// REMOVED FIELDS (no longer in API responses):
+// - class_size: number | null;
+// - secondary_industries: string[] | null;
+// - international_student_ratio: number | null;
 
 export interface MatchResult {
   university: University;
@@ -503,6 +539,13 @@ export interface MatchResponse {
     program_type: string;
   };
   matches: MatchResult[];
+}
+
+export interface MetadataResponse {
+  success: boolean;
+  programTypes: string[];  // From program_types table
+  countries: string[];     // From countries table
+  industries: string[];    // From industries table
 }
 
 export interface SearchResponse {

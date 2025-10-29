@@ -8,6 +8,9 @@ const logger = getLogger('routes/index');
 import { getUniversityMatches } from '../controllers/matchController';
 import { searchUniversities } from '../controllers/searchController';
 
+//import routers
+import metadataRoutes from './metadataRoutes';
+
 const router = express.Router();
 
 // Matching routes - /api/match
@@ -15,6 +18,9 @@ router.post('/match', getUniversityMatches);
 
 // Search routes - /api/search
 router.get('/search', searchUniversities);
+
+// Metadata routes - /api/metadata
+router.use('/', metadataRoutes);
 
 // University routes - /api/universities
 // router.use('/', universityRoutes);

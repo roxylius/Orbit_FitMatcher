@@ -45,14 +45,40 @@ export const searchUniversities = async (
   logger.info('searchUniversities', 'ENTERING - Searching universities with filters');
 
   try {
-    // Build dynamic query
-    let query = 'SELECT * FROM universities WHERE 1=1';
+    // Build dynamic query with JOINs for normalized tables
+    let query = `
+      SELECT 
+        u.university_id,
+        u.name,
+        u.program_name,
+        pt.name as program_type,
+        u.location_city,
+        c.name as location_country,
+        c.region as location_region,
+        u.ranking,
+        u.acceptance_rate,
+        u.median_gmat,
+        u.median_gre,
+        u.median_gpa,
+        u.avg_work_experience,
+        u.tuition_usd,
+        u.avg_starting_salary_usd,
+        u.scholarship_available,
+        u.visa_sponsorship,
+        i.name as primary_industry,
+        u.post_study_work_support
+      FROM universities u
+      LEFT JOIN program_types pt ON u.program_type_id = pt.program_type_id
+      LEFT JOIN countries c ON u.country_id = c.country_id
+      LEFT JOIN industries i ON u.primary_industry_id = i.industry_id
+      WHERE 1=1
+    `;
     const queryParams: any[] = [];
     let paramIndex = 1;
 
     // HIGH PRIORITY: Program Type (70% search start)
     if (filters.program) {
-      query += ` AND program_type = $${paramIndex}`;
+      query += ` AND pt.name = $${paramIndex}`;
       queryParams.push(filters.program);
       paramIndex++;
       logger.info('searchUniversities', `Filter: program_type = ${filters.program}`);
@@ -60,7 +86,7 @@ export const searchUniversities = async (
 
     // HIGH PRIORITY: Location/Country (50% decision factor)
     if (filters.location_country) {
-      query += ` AND location_country ILIKE $${paramIndex}`;
+      query += ` AND c.name ILIKE $${paramIndex}`;
       queryParams.push(`%${filters.location_country}%`);
       paramIndex++;
       logger.info('searchUniversities', `Filter: location_country LIKE ${filters.location_country}`);
@@ -194,19 +220,25 @@ const getTotalCount = async (
   logger.info('getTotalCount', 'ENTERING - Getting total count for pagination');
 
   try {
-    let countQuery = 'SELECT COUNT(*) FROM universities WHERE 1=1';
+    let countQuery = `
+      SELECT COUNT(*) 
+      FROM universities u
+      LEFT JOIN program_types pt ON u.program_type_id = pt.program_type_id
+      LEFT JOIN countries c ON u.country_id = c.country_id
+      WHERE 1=1
+    `;
     const countParams: any[] = [];
     let paramIndex = 1;
 
     // Re-apply all filters (without ORDER BY, LIMIT, OFFSET)
     if (filters.program) {
-      countQuery += ` AND program_type = $${paramIndex}`;
+      countQuery += ` AND pt.name = $${paramIndex}`;
       countParams.push(filters.program);
       paramIndex++;
     }
 
     if (filters.location_country) {
-      countQuery += ` AND location_country ILIKE $${paramIndex}`;
+      countQuery += ` AND c.name ILIKE $${paramIndex}`;
       countParams.push(`%${filters.location_country}%`);
       paramIndex++;
     }

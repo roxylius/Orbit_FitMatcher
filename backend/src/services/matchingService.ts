@@ -318,28 +318,54 @@ export const findMatches = async (
   logger.info('findMatches', 'ENTERING - Finding matches for profile');
   
   try {
-    // Build dynamic query based on profile filters
-    let query = 'SELECT * FROM universities WHERE 1=1';
+    // Build dynamic query with JOINs for normalized tables
+    let query = `
+      SELECT 
+        u.university_id,
+        u.name,
+        u.program_name,
+        pt.name as program_type,
+        u.location_city,
+        c.name as location_country,
+        c.region as location_region,
+        u.ranking,
+        u.acceptance_rate,
+        u.median_gmat,
+        u.median_gre,
+        u.median_gpa,
+        u.avg_work_experience,
+        u.tuition_usd,
+        u.avg_starting_salary_usd,
+        u.scholarship_available,
+        u.visa_sponsorship,
+        i.name as primary_industry,
+        u.post_study_work_support
+      FROM universities u
+      LEFT JOIN program_types pt ON u.program_type_id = pt.program_type_id
+      LEFT JOIN countries c ON u.country_id = c.country_id
+      LEFT JOIN industries i ON u.primary_industry_id = i.industry_id
+      WHERE 1=1
+    `;
     const queryParams: any[] = [];
     let paramIndex = 1;
 
     // Filter by program type
     if (profile.program_type) {
-      query += ` AND program_type = $${paramIndex}`;
+      query += ` AND pt.name = $${paramIndex}`;
       queryParams.push(profile.program_type);
       paramIndex++;
     }
 
     // Filter by location if strong preference
     if (profile.preferred_location) {
-      query += ` AND (location_country ILIKE $${paramIndex} OR location_region ILIKE $${paramIndex})`;
+      query += ` AND (c.name ILIKE $${paramIndex} OR c.region ILIKE $${paramIndex})`;
       queryParams.push(`%${profile.preferred_location}%`);
       paramIndex++;
     }
 
     // Filter by visa sponsorship if required
     if (profile.visa_required) {
-      query += ` AND visa_sponsorship = true`;
+      query += ` AND u.visa_sponsorship = true`;
     }
 
     logger.info('findMatches', `Executing database query with ${queryParams.length} parameters`);
