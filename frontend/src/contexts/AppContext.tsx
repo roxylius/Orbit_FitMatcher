@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useLayoutEffect } from 
 import type { ReactNode } from 'react';
 import { API_BASE_URL } from '@/lib/config';
 
-// ==================== TYPES ====================
+//  TYPES 
 
 export interface User {
   id: number;
@@ -40,7 +40,13 @@ export interface MatchResult {
   reasons: string[];
 }
 
-// ==================== CONTEXT TYPE ====================
+export interface Metadata {
+  programTypes: string[];
+  countries: string[];
+  industries: string[];
+}
+
+//  CONTEXT TYPE 
 
 interface AppContextType {
   // Auth State
@@ -49,6 +55,10 @@ interface AppContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
+  
+  // Metadata State
+  metadata: Metadata | null;
+  metadataLoading: boolean;
   
   // Saved Universities State
   savedUniversities: University[];
@@ -72,16 +82,20 @@ interface AppContextType {
   clearMatchResults: () => void;
 }
 
-// ==================== CONTEXT ====================
+//  CONTEXT 
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// ==================== PROVIDER ====================
+//  PROVIDER 
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Metadata State
+  const [metadata, setMetadata] = useState<Metadata | null>(null);
+  const [metadataLoading, setMetadataLoading] = useState(true);
 
   // Saved Universities State
   const [savedUniversities, setSavedUniversities] = useState<University[]>([]);
@@ -94,7 +108,56 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
   const [hasMatched, setHasMatched] = useState(false);
 
-  // ==================== AUTH FUNCTIONS ====================
+  //  METADATA FUNCTIONS 
+
+  // Fetch metadata once on app initialization
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        // Check localStorage cache first
+        const cached = localStorage.getItem('metadata');
+        const cacheTimestamp = localStorage.getItem('metadataTimestamp');
+        
+        // Use cache if less than 24 hours old
+        if (cached && cacheTimestamp) {
+          const age = Date.now() - parseInt(cacheTimestamp);
+          if (age < 24 * 60 * 60 * 1000) { // 24 hours
+            setMetadata(JSON.parse(cached));
+            setMetadataLoading(false);
+            return;
+          }
+        }
+
+        // Fetch fresh data
+        const response = await fetch(`${API_BASE_URL}/metadata`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          const metadataObj: Metadata = {
+            programTypes: data.programTypes || [],
+            countries: data.countries || [],
+            industries: data.industries || [],
+          };
+          
+          setMetadata(metadataObj);
+          
+          // Cache in localStorage
+          localStorage.setItem('metadata', JSON.stringify(metadataObj));
+          localStorage.setItem('metadataTimestamp', Date.now().toString());
+        } else {
+          console.error('Failed to fetch metadata');
+        }
+      } catch (error) {
+        console.error('Error fetching metadata:', error);
+      } finally {
+        setMetadataLoading(false);
+      }
+    };
+
+    fetchMetadata();
+  }, []);
+
+  //  AUTH FUNCTIONS 
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -167,7 +230,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     clearMatchResults();
   };
 
-  // ==================== SAVED UNIVERSITIES FUNCTIONS ====================
+  //  SAVED UNIVERSITIES FUNCTIONS 
 
   // Fetch saved universities from backend on mount and when user changes
   useLayoutEffect(() => {
@@ -291,21 +354,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setSavedUniversities([]);
   };
 
-  // ==================== SEARCH RESULTS FUNCTIONS ====================
+  //  SEARCH RESULTS FUNCTIONS 
 
   const clearSearchResults = () => {
     setSearchResults([]);
     setHasSearched(false);
   };
 
-  // ==================== MATCH RESULTS FUNCTIONS ====================
+  //  MATCH RESULTS FUNCTIONS 
 
   const clearMatchResults = () => {
     setMatchResults([]);
     setHasMatched(false);
   };
 
-  // ==================== PROVIDER VALUE ====================
+  //  PROVIDER VALUE 
 
   const value: AppContextType = {
     // Auth
@@ -314,6 +377,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     login,
     signup,
     logout,
+    
+    // Metadata
+    metadata,
+    metadataLoading,
     
     // Saved Universities
     savedUniversities,
@@ -340,7 +407,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-// ==================== HOOK ====================
+//  HOOK 
 
 export const useApp = () => {
   const context = useContext(AppContext);
@@ -350,11 +417,16 @@ export const useApp = () => {
   return context;
 };
 
-// ==================== CONVENIENCE HOOKS ====================
+//  CONVENIENCE HOOKS 
 
 export const useAuth = () => {
   const { user, loading, login, signup, logout } = useApp();
   return { user, loading, login, signup, logout };
+};
+
+export const useMetadata = () => {
+  const { metadata, metadataLoading } = useApp();
+  return { metadata, metadataLoading };
 };
 
 export const useSavedUniversities = () => {

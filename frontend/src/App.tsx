@@ -5,33 +5,64 @@ import Search from '@/pages/Search';
 import SavedUniversities from '@/pages/SavedUniversities';
 import { Login, Signup, ForgotPassword, ResetPassword } from '@/pages/auth';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { AppProvider } from '@/contexts';
 
 function App() {
   return (
-    <AppProvider>
-      <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+    <ErrorBoundary>
+      <AppProvider>
+        <Router>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={
+              <ErrorBoundary>
+                <Login />
+              </ErrorBoundary>
+            } />
+            <Route path="/signup" element={
+              <ErrorBoundary>
+                <Signup />
+              </ErrorBoundary>
+            } />
+            <Route path="/forgot-password" element={
+              <ErrorBoundary>
+                <ForgotPassword />
+              </ErrorBoundary>
+            } />
+            <Route path="/reset-password" element={
+              <ErrorBoundary>
+                <ResetPassword />
+              </ErrorBoundary>
+            } />
 
-          {/* Protected routes */}
-          <Route path="/" element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="/search" replace />} />
-            <Route path="search" element={<Search />} />
-            <Route path="fit-matcher" element={<FitMatcher />} />
-            <Route path="saved" element={<SavedUniversities />} />
-          </Route>
-        </Routes>
-      </Router>
-    </AppProvider>
+            {/* Protected routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Navigate to="/search" replace />} />
+              <Route path="search" element={
+                <ErrorBoundary>
+                  <Search />
+                </ErrorBoundary>
+              } />
+              <Route path="fit-matcher" element={
+                <ErrorBoundary>
+                  <FitMatcher />
+                </ErrorBoundary>
+              } />
+              <Route path="saved" element={
+                <ErrorBoundary>
+                  <SavedUniversities />
+                </ErrorBoundary>
+              } />
+            </Route>
+          </Routes>
+        </Router>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { API_BASE_URL } from '@/lib/config';
 import UniversityResultCard from '@/components/UniversityResultCard';
-import { useSearch } from '@/contexts';
+import InlineErrorBoundary from '@/components/ui/InlineErrorBoundary';
+import { useSearch, useMetadata } from '@/contexts';
 
 interface FormData {
   gmat_score: string;
@@ -23,6 +24,7 @@ interface FormData {
 
 const FitMatcher = () => {
   const { matchResults, setMatchResults, hasMatched, setHasMatched } = useSearch();
+  const { metadata, metadataLoading } = useMetadata();
   
   const [formData, setFormData] = useState<FormData>({
     gmat_score: '',
@@ -39,6 +41,25 @@ const FitMatcher = () => {
 
   const [testType, setTestType] = useState<'gmat' | 'gre' | ''>('');
   const [loading, setLoading] = useState(false);
+
+  const handleQuickFill = () => {
+    // Fill test type
+    setTestType('gmat');
+    
+    // Fill form data
+    setFormData({
+      gmat_score: '719',
+      gre_score: '',
+      gpa: '3.47',
+      gpa_scale: '4.0',
+      work_experience: '2',
+      program_type: 'MBA',
+      industry_preference: '',
+      nationality: '',
+      preferred_location: 'USA',
+      visa_required: true,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +119,15 @@ const FitMatcher = () => {
         </p>
       </div>
 
+      {metadataLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex items-center gap-3 text-slate-600">
+            <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+            <span>Loading form options...</span>
+          </div>
+        </div>
+      )}
+
       <Card className="max-w-5xl shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="space-y-1 pb-6">
           <CardTitle className="text-2xl">Your Academic Profile</CardTitle>
@@ -106,6 +136,26 @@ const FitMatcher = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Quick Fill Button for Testing */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-amber-900">
+                <p className="font-semibold">Demo Profile</p>
+                <p className="text-xs text-amber-700">Quick fill form with sample data</p>
+              </div>
+              <Button
+                type="button"
+                onClick={handleQuickFill}
+                size="sm"
+                variant="outline"
+                className="bg-white hover:bg-amber-50 border-amber-300 text-amber-900"
+                disabled={loading || metadataLoading}
+              >
+                Quick Fill
+              </Button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Test Score Section */}
             <div className="space-y-4">
@@ -122,7 +172,7 @@ const FitMatcher = () => {
 
               {testType === 'gmat' && (
                 <div>
-                  <Label htmlFor="gmat_score">GMAT Score (200-800)</Label>
+                  <Label htmlFor="gmat_score" className='pb-2'>GMAT Score (200-800)</Label>
                   <Input
                     id="gmat_score"
                     type="number"
@@ -138,7 +188,7 @@ const FitMatcher = () => {
 
               {testType === 'gre' && (
                 <div>
-                  <Label htmlFor="gre_score">GRE Score (260-340)</Label>
+                  <Label htmlFor="gre_score" className='pb-2'>GRE Score (260-340)</Label>
                   <Input
                     id="gre_score"
                     type="number"
@@ -210,18 +260,17 @@ const FitMatcher = () => {
                 <Select
                   value={formData.program_type || undefined}
                   onValueChange={(value) => setFormData({ ...formData, program_type: value })}
+                  disabled={metadataLoading}
                 >
                   <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Select program type" />
+                    <SelectValue placeholder={metadataLoading ? "Loading..." : "Select program type"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MBA">MBA</SelectItem>
-                    <SelectItem value="MS CS">MS Computer Science</SelectItem>
-                    <SelectItem value="MS Finance">MS Finance</SelectItem>
-                    <SelectItem value="MS Analytics">MS Analytics</SelectItem>
-                    <SelectItem value="MS Data Science">MS Data Science</SelectItem>
-                    <SelectItem value="MS Engineering">MS Engineering</SelectItem>
-                    <SelectItem value="MIM">MIM (Master in Management)</SelectItem>
+                    {metadata?.programTypes.map((program) => (
+                      <SelectItem key={program} value={program}>
+                        {program}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -236,35 +285,65 @@ const FitMatcher = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="industry_preference">Industry Preference</Label>
-                  <Input
-                    id="industry_preference"
-                    value={formData.industry_preference}
-                    onChange={(e) => setFormData({ ...formData, industry_preference: e.target.value })}
-                    placeholder="e.g., Tech, Finance, Consulting"
-                    className="mt-1.5"
-                  />
+                  <Select
+                    value={formData.industry_preference || undefined}
+                    onValueChange={(value) => setFormData({ ...formData, industry_preference: value === 'none' ? '' : value })}
+                    disabled={metadataLoading}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder={metadataLoading ? "Loading..." : "Select industry"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {metadata?.industries.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <Label htmlFor="nationality">Nationality</Label>
-                  <Input
-                    id="nationality"
-                    value={formData.nationality}
-                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                    placeholder="e.g., India, USA, China"
-                    className="mt-1.5"
-                  />
+                  <Select
+                    value={formData.nationality || undefined}
+                    onValueChange={(value) => setFormData({ ...formData, nationality: value === 'none' ? '' : value })}
+                    disabled={metadataLoading}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder={metadataLoading ? "Loading..." : "Select nationality"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Not specified</SelectItem>
+                      {metadata?.countries.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="sm:col-span-2">
                   <Label htmlFor="preferred_location">Preferred Location</Label>
-                  <Input
-                    id="preferred_location"
-                    value={formData.preferred_location}
-                    onChange={(e) => setFormData({ ...formData, preferred_location: e.target.value })}
-                    placeholder="e.g., USA, Canada, UK"
-                    className="mt-1.5"
-                  />
+                  <Select
+                    value={formData.preferred_location || undefined}
+                    onValueChange={(value) => setFormData({ ...formData, preferred_location: value === 'none' ? '' : value })}
+                    disabled={metadataLoading}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder={metadataLoading ? "Loading..." : "Select preferred country"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No preference</SelectItem>
+                      {metadata?.countries.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="sm:col-span-2 flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
@@ -314,13 +393,14 @@ const FitMatcher = () => {
           {matchResults.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {matchResults.map((match) => (
-                <UniversityResultCard
-                  key={match.university.university_id}
-                  university={match.university}
-                  matchPercentage={match.match_percentage}
-                  category={match.category}
-                  reasons={match.reasons}
-                />
+                <InlineErrorBoundary key={match.university.university_id} fallbackMessage="Failed to load match result">
+                  <UniversityResultCard
+                    university={match.university}
+                    matchPercentage={match.match_percentage}
+                    category={match.category}
+                    reasons={match.reasons}
+                  />
+                </InlineErrorBoundary>
               ))}
             </div>
           )}

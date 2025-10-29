@@ -1,5 +1,6 @@
 import { useSavedUniversities } from '@/contexts';
 import UniversityResultCard from '@/components/UniversityResultCard';
+import InlineErrorBoundary from '@/components/ui/InlineErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Trash2, Bookmark } from 'lucide-react';
 
@@ -53,10 +54,11 @@ const SavedUniversities = () => {
                 return dateB - dateA;
               })
               .map((university) => (
-                <UniversityResultCard
-                  key={university.university_id}
-                  university={university}
-                />
+                <InlineErrorBoundary key={university.university_id} fallbackMessage="Failed to load saved university">
+                  <UniversityResultCard
+                    university={university}
+                  />
+                </InlineErrorBoundary>
               ))}
           </div>
         </div>

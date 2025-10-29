@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { API_BASE_URL } from '@/lib/config';
 import UniversityResultCard from '@/components/UniversityResultCard';
-import { useSearch } from '@/contexts';
+import InlineErrorBoundary from '@/components/ui/InlineErrorBoundary';
+import { useSearch, useMetadata } from '@/contexts';
 
 interface SearchFilters {
   program: string;
@@ -25,6 +26,7 @@ interface SearchFilters {
 
 const Search = () => {
   const { searchResults, setSearchResults, hasSearched, setHasSearched, clearSearchResults } = useSearch();
+  const { metadata, metadataLoading } = useMetadata();
   
   const [filters, setFilters] = useState<SearchFilters>({
     program: '',
@@ -103,6 +105,15 @@ const Search = () => {
         </p>
       </div>
 
+      {metadataLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex items-center gap-3 text-slate-600">
+            <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+            <span>Loading search options...</span>
+          </div>
+        </div>
+      )}
+
       <Card className="max-w-5xl shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="space-y-1 pb-6">
           <CardTitle className="text-2xl">Search Filters</CardTitle>
@@ -118,33 +129,42 @@ const Search = () => {
                 <Label htmlFor="program">Program Type</Label>
                 <Select
                   value={filters.program || undefined}
-                  onValueChange={(value) => setFilters({ ...filters, program: value })}
+                  onValueChange={(value) => setFilters({ ...filters, program: value === 'all' ? '' : value })}
+                  disabled={metadataLoading}
                 >
                   <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="All programs" />
+                    <SelectValue placeholder={metadataLoading ? "Loading..." : "All programs"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Programs</SelectItem>
-                    <SelectItem value="MBA">MBA</SelectItem>
-                    <SelectItem value="MS CS">MS Computer Science</SelectItem>
-                    <SelectItem value="MS Finance">MS Finance</SelectItem>
-                    <SelectItem value="MS Analytics">MS Analytics</SelectItem>
-                    <SelectItem value="MS Data Science">MS Data Science</SelectItem>
-                    <SelectItem value="MS Engineering">MS Engineering</SelectItem>
-                    <SelectItem value="MIM">MIM</SelectItem>
+                    {metadata?.programTypes.map((program) => (
+                      <SelectItem key={program} value={program}>
+                        {program}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
                 <Label htmlFor="location_country">Country</Label>
-                <Input
-                  id="location_country"
-                  value={filters.location_country}
-                  onChange={(e) => setFilters({ ...filters, location_country: e.target.value })}
-                  placeholder="e.g., USA, Canada, UK"
-                  className="mt-1.5"
-                />
+                <Select
+                  value={filters.location_country || undefined}
+                  onValueChange={(value) => setFilters({ ...filters, location_country: value === 'all' ? '' : value })}
+                  disabled={metadataLoading}
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder={metadataLoading ? "Loading..." : "All countries"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    {metadata?.countries.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -342,10 +362,11 @@ const Search = () => {
           {searchResults.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {searchResults.map((university) => (
-                <UniversityResultCard
-                  key={university.university_id}
-                  university={university}
-                />
+                <InlineErrorBoundary key={university.university_id} fallbackMessage="Failed to load university card">
+                  <UniversityResultCard
+                    university={university}
+                  />
+                </InlineErrorBoundary>
               ))}
             </div>
           )}

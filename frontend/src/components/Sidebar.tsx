@@ -126,10 +126,10 @@ const Sidebar = () => {
             Logout
           </Button>
 
-          <div className="text-xs text-slate-500 pt-2">
+          {/* <div className="text-xs text-slate-500 pt-2">
             <p className="font-semibold text-slate-400">© 2025 University Matcher</p>
             <p className="mt-1">Powered by Orbit AI</p>
-          </div>
+          </div> */}
         </div>
       </div>
     </>
