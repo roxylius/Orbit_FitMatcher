@@ -44,7 +44,6 @@ const calculateMatchScore = (profile: UserProfile, university: University): numb
     acceptance_rate,
     visa_sponsorship,
     primary_industry,
-    secondary_industries,
     location_country,
     location_region
   } = university;
@@ -117,15 +116,11 @@ const calculateMatchScore = (profile: UserProfile, university: University): numb
 
   // Factor 6: Industry Match (if provided) - 3% weight
   let industryScore = 50;
-  if (industry_preference && (primary_industry || secondary_industries)) {
+  if (industry_preference && primary_industry) {
     const industryLower = industry_preference.toLowerCase();
     const primaryMatch = primary_industry?.toLowerCase().includes(industryLower);
-    const secondaryMatch = secondary_industries?.some(ind => 
-      ind.toLowerCase().includes(industryLower)
-    );
     
     if (primaryMatch) industryScore = 90;
-    else if (secondaryMatch) industryScore = 70;
     else industryScore = 40;
   }
 

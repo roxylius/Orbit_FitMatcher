@@ -7,11 +7,15 @@ const logger = getLogger('routes/index');
 //import controllers
 import { getUniversityMatches } from '../controllers/matchController';
 import { searchUniversities } from '../controllers/searchController';
+import { getMetadata } from '../controllers/metadataController';
 
-//import routers
-import metadataRoutes from './metadataRoutes';
+//import auth routes
+import authRouter from './auth';
 
 const router = express.Router();
+
+// Auth routes - /api/auth
+router.use('/auth', authRouter);
 
 // Matching routes - /api/match
 router.post('/match', getUniversityMatches);
@@ -20,13 +24,7 @@ router.post('/match', getUniversityMatches);
 router.get('/search', searchUniversities);
 
 // Metadata routes - /api/metadata
-router.use('/', metadataRoutes);
-
-// University routes - /api/universities
-// router.use('/', universityRoutes);
-
-
-
+router.use('/metadata', getMetadata);
 
 
 // Middleware to log all requests
