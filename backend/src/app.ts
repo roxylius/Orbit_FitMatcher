@@ -56,10 +56,10 @@ import User from './models/user';
 passport.use(User.createStrategy());
 
 // used to serialize the user for the session
-passport.serializeUser(User.serializeUser());
+passport.serializeUser(User.serializeUser() as any);
 
 // used to deserialize the user
-passport.deserializeUser(User.deserializeUser());
+passport.deserializeUser(User.deserializeUser() as any);
 
 // Health check route
 app.get('/health', (req, res) => {

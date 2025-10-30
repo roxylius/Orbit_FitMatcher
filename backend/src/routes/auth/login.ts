@@ -25,26 +25,17 @@ loginRouter.post('/', (req: Request, res: Response, next: NextFunction) => {
                 // Error during login
                 return res.status(500).json({ message: 'An error occurred during login.' });
             }
-            try {
-                // Find the user by name
-                const foundUser = await User.findOne({ name: user.name }).exec();
-                if (!foundUser) {
-                    return res.status(404).json({ message: 'User not found.' });
-                }
-                // Successful login
-                // Return the user's details, including their role
-                return res.status(200).json({
-                    message: 'Login successful.',
-                    user: {
-                        id: foundUser._id,
-                        email: foundUser.email,
-                        name: foundUser.name,
-                        role: foundUser.role,
-                    },
-                });
-            } catch (error) {
-                return res.status(500).json({ message: 'An error occurred while retrieving user details.' });
-            }
+            // Successful login
+            // Return the user's details, including their role
+            return res.status(200).json({
+                message: 'Login successful.',
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                },
+            });
         });
     })(req, res, next);
 });

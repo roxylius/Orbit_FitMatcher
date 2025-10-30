@@ -51,15 +51,15 @@ forgotPasswordRouter.post('/', async (req: Request, res: Response) => {
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
         // Save OTP to user document
-        user.resetPasswordOTP = otp;
-        user.resetPasswordOTPExpires = otpExpires;
+        (user as any).resetPasswordOTP = otp;
+        (user as any).resetPasswordOTPExpires = otpExpires;
         await user.save();
 
         // Send OTP via email
         try {
-            await sendPasswordResetOTP(user.email, otp, user.name);
+            await sendPasswordResetOTP((user as any).email, otp, (user as any).name);
             
-            logger.info('OTP_GENERATED', `Password reset OTP generated for user: ${user.email}`);
+            logger.info('OTP_GENERATED', `Password reset OTP generated for user: ${(user as any).email}`);
             
             return res.status(200).json({ 
                 success: true,
@@ -73,8 +73,8 @@ forgotPasswordRouter.post('/', async (req: Request, res: Response) => {
             logger.error('EMAIL_SEND_FAILED', `Failed to send OTP email: ${emailError.message}`);
             
             // Clear OTP fields if email fails
-            user.resetPasswordOTP = undefined;
-            user.resetPasswordOTPExpires = undefined;
+            (user as any).resetPasswordOTP = undefined;
+            (user as any).resetPasswordOTPExpires = undefined;
             await user.save();
             
             return res.status(500).json({ 

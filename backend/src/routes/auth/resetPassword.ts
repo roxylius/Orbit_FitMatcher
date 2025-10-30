@@ -34,7 +34,7 @@ resetPasswordRouter.post('/verify-otp', async (req: Request, res: Response) => {
         }
 
         // Check if OTP exists and is not expired
-        if (!user.resetPasswordOTP || !user.resetPasswordOTPExpires) {
+        if (!(user as any).resetPasswordOTP || !(user as any).resetPasswordOTPExpires) {
             return res.status(400).json({ 
                 success: false,
                 message: 'No OTP request found. Please request a new OTP.' 
@@ -42,10 +42,10 @@ resetPasswordRouter.post('/verify-otp', async (req: Request, res: Response) => {
         }
 
         // Check if OTP is expired
-        if (new Date() > user.resetPasswordOTPExpires) {
+        if (new Date() > (user as any).resetPasswordOTPExpires) {
             // Clear expired OTP
-            user.resetPasswordOTP = undefined;
-            user.resetPasswordOTPExpires = undefined;
+            (user as any).resetPasswordOTP = undefined;
+            (user as any).resetPasswordOTPExpires = undefined;
             await user.save();
 
             return res.status(400).json({ 
@@ -55,20 +55,20 @@ resetPasswordRouter.post('/verify-otp', async (req: Request, res: Response) => {
         }
 
         // Verify OTP matches
-        if (user.resetPasswordOTP !== otp) {
-            logger.warn('INVALID_OTP', `Invalid OTP attempt for user: ${user.email}`);
+        if ((user as any).resetPasswordOTP !== otp) {
+            logger.warn('INVALID_OTP', `Invalid OTP attempt for user: ${(user as any).email}`);
             return res.status(400).json({ 
                 success: false,
                 message: 'Invalid OTP. Please check and try again.' 
             });
         }
         
-        logger.info('OTP_VERIFIED', `OTP verified successfully for user: ${user.email}`);
+        logger.info('OTP_VERIFIED', `OTP verified successfully for user: ${(user as any).email}`);
 
         return res.status(200).json({ 
             success: true,
             message: 'OTP verified successfully. You can now reset your password.',
-            email: user.email
+            email: (user as any).email
         });
 
     } catch (error: any) {
@@ -115,7 +115,7 @@ resetPasswordRouter.post('/', async (req: Request, res: Response) => {
         }
 
         // Check if OTP exists and is not expired
-        if (!user.resetPasswordOTP || !user.resetPasswordOTPExpires) {
+        if (!(user as any).resetPasswordOTP || !(user as any).resetPasswordOTPExpires) {
             return res.status(400).json({ 
                 success: false,
                 message: 'No OTP request found. Please request a new OTP.' 
@@ -123,9 +123,9 @@ resetPasswordRouter.post('/', async (req: Request, res: Response) => {
         }
 
         // Check if OTP is expired
-        if (new Date() > user.resetPasswordOTPExpires) {
-            user.resetPasswordOTP = undefined;
-            user.resetPasswordOTPExpires = undefined;
+        if (new Date() > (user as any).resetPasswordOTPExpires) {
+            (user as any).resetPasswordOTP = undefined;
+            (user as any).resetPasswordOTPExpires = undefined;
             await user.save();
 
             return res.status(400).json({ 
@@ -135,8 +135,8 @@ resetPasswordRouter.post('/', async (req: Request, res: Response) => {
         }
 
         // Verify OTP matches
-        if (user.resetPasswordOTP !== otp) {
-            logger.warn('INVALID_OTP_RESET', `Invalid OTP attempt during password reset for user: ${user.email}`);
+        if ((user as any).resetPasswordOTP !== otp) {
+            logger.warn('INVALID_OTP_RESET', `Invalid OTP attempt during password reset for user: ${(user as any).email}`);
             return res.status(400).json({ 
                 success: false,
                 message: 'Invalid OTP. Please check and try again.' 
@@ -145,19 +145,19 @@ resetPasswordRouter.post('/', async (req: Request, res: Response) => {
         
         // Reset/Set password using passport-local-mongoose method
         try {
-            await user.setPassword(newPassword);
+            await (user as any).setPassword(newPassword);
             
             // Clear OTP fields
-            user.resetPasswordOTP = undefined;
-            user.resetPasswordOTPExpires = undefined;
+            (user as any).resetPasswordOTP = undefined;
+            (user as any).resetPasswordOTPExpires = undefined;
             
             await user.save();
 
-            logger.info('PASSWORD_RESET', `Password reset successfully for user: ${user.email}`);
+            logger.info('PASSWORD_RESET', `Password reset successfully for user: ${(user as any).email}`);
 
             // Send confirmation email
             try {
-                await sendPasswordChangedEmail(user.email, user.name);
+                await sendPasswordChangedEmail((user as any).email, (user as any).name);
             } catch (emailError: any) {
                 // Log error but don't fail the password reset
                 logger.error('EMAIL_SEND_FAILED', `Failed to send password changed email: ${emailError.message}`);

@@ -27,8 +27,8 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
         
         return res.status(200).json({
             success: true,
-            count: userData?.savedUniversities?.length || 0,
-            universities: userData?.savedUniversities || []
+            count: (userData as any)?.savedUniversities?.length || 0,
+            universities: (userData as any)?.savedUniversities || []
         });
     } catch (error) {
         console.error('Error fetching saved universities:', error);
