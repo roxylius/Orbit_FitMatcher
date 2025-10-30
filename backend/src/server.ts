@@ -19,4 +19,9 @@ mongoose.connect(DB)
 server.use(app);
 
 // Start the server
-server.listen(port, () => console.log("The server is listening on port: ", port, '....'));
+if (require.main === module) {
+    server.listen(port, () => console.log("The server is listening on port: ", port, '....'));
+}
+
+// Export the server for serverless deployment (e.g., Vercel)
+export default server;
