@@ -26,6 +26,7 @@ SignupRouter.post("/", async (req: Request, res: Response) => {
         const newUser = new User({ email, name, role, permissions, provider: 'local' });
 
         // Registers the user using passport-local-mongoose fn
+        // @ts-ignore - Bypass complex type inference with passport-local-mongoose
         User.register(newUser, password, (err: any, user: any) => {
             // If any error in registering otherwise authenticate the user
             if (err) { 

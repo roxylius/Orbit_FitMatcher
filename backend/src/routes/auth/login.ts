@@ -34,6 +34,7 @@ loginRouter.post('/', (req: Request, res: Response, next: NextFunction) => {
                     email: user.email,
                     name: user.name,
                     role: user.role,
+                    
                 },
             });
         });
