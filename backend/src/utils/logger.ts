@@ -1,7 +1,7 @@
-const log4js = require('log4js');
+import log4js from 'log4js';
 
 //load log4js configuration from json config file
-const config = require('../config/log4js-config.json');
+import config from '../config/log4js-config.json';
 log4js.configure(config);
 
 /**
