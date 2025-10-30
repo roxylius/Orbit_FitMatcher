@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Target, Menu, X, LogOut, User, Bookmark, Moon, Sun } from 'lucide-react';
+import { Search, Target, Menu, X, LogOut, User, Bookmark } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth, useSavedUniversities, useTheme } from '@/contexts';
+import { useAuth, useSavedUniversities } from '@/contexts';
 import { Button } from '@/components/ui/button';
 
 const Sidebar = () => {
@@ -9,7 +9,6 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { savedUniversities } = useSavedUniversities();
-  const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -118,19 +117,6 @@ const Sidebar = () => {
             </div>
           )}
           
-          <Button
-            onClick={toggleTheme}
-            variant="ghost"
-            className="w-full justify-start !text-slate-300 hover:!text-white hover:bg-slate-700/50 transition-all"
-          >
-            {theme === 'light' ? (
-              <Moon className="w-4 h-4 mr-2" />
-            ) : (
-              <Sun className="w-4 h-4 mr-2" />
-            )}
-            {theme === 'light' ? 'Dark' : 'Light'} Mode
-          </Button>
-
           <Button
             onClick={handleLogout}
             variant="ghost"

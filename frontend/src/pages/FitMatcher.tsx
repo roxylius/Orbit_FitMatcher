@@ -46,6 +46,7 @@ const FitMatcher = () => {
     // Fill test type
     setTestType('gmat');
     
+    
     // Fill form data
     setFormData({
       gmat_score: '719',

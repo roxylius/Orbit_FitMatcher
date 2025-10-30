@@ -6,14 +6,13 @@ import SavedUniversities from '@/pages/SavedUniversities';
 import { Login, Signup, ForgotPassword, ResetPassword } from '@/pages/auth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
-import { AppProvider, ThemeProvider } from '@/contexts';
+import { AppProvider } from '@/contexts';
 
 function App() {
   return (
-    <ThemeProvider>
-      <ErrorBoundary>
-        <AppProvider>
-          <Router>
+    <ErrorBoundary>
+      <AppProvider>
+        <Router>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={
@@ -62,9 +61,8 @@ function App() {
             </Route>
           </Routes>
         </Router>
-        </AppProvider>
-      </ErrorBoundary>
-    </ThemeProvider>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 
