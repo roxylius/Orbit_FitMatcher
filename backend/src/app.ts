@@ -16,7 +16,7 @@ const app = express();
 const logger = getLogger('app.ts');
 
 //set up middleware
-app.use(cors({ origin: ['http://localhost:5173', 'https://xbox-song-clerk-gloves.trycloudflare.com'], credentials: true, methods: ['GET', 'POST', 'DELETE','PUT'] }));
+app.use(cors({ origin: ['http://localhost:5173','https://orbit-fit-matcher.vercel.app', 'https://xbox-song-clerk-gloves.trycloudflare.com'], credentials: true, methods: ['GET', 'POST', 'DELETE','PUT'] }));
 app.use(bodyParser.urlencoded({
    extended: true })); // read req body
 app.use(bodyParser.json()); // parse JSON bodies
