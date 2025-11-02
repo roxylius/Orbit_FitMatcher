@@ -1,6 +1,0 @@
-steps:
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy', 'backend/', '--quiet'] # Added 'backend/' to specify the service directory
-
-options:
-  logging: CLOUD_LOGGING_ONLY

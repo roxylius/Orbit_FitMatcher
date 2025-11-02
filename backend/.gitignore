@@ -34,3 +34,8 @@ Thumbs.db
 *.log
 *.tmp
 *.swp
+
+# Google Cloud files
+.gcloudignore
+app.yaml
+cloudbuild.yaml
