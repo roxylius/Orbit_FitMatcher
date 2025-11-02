@@ -219,7 +219,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: 'POST',
+      method: 'DELETE',
       credentials: 'include',
     });
     setUser(null);

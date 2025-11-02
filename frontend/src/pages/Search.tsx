@@ -94,30 +94,30 @@ const Search = () => {
   return (
     <div className="animate-in fade-in duration-500">
       <div className="mb-6 lg:mb-8 pt-12 lg:pt-0">
-        <div className="inline-block px-4 py-1 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full mb-3">
-          <span className="text-sm font-semibold text-purple-700">Advanced Search</span>
+        <div className="inline-block px-4 py-1 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full mb-3">
+          <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">Advanced Search</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-2">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-2">
           Search Universities
         </h1>
-        <p className="text-slate-600 text-base sm:text-lg">
+        <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
           Filter and search through our comprehensive database of universities
         </p>
       </div>
 
       {metadataLoading && (
         <div className="flex items-center justify-center py-8">
-          <div className="flex items-center gap-3 text-slate-600">
-            <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+          <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
+            <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 border-t-blue-600 rounded-full animate-spin" />
             <span>Loading search options...</span>
           </div>
         </div>
       )}
 
-      <Card className="max-w-5xl shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="max-w-5xl shadow-xl border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl">Search Filters</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-2xl dark:text-slate-100">Search Filters</CardTitle>
+          <CardDescription className="text-base dark:text-slate-400">
             Use filters to narrow down your university search
           </CardDescription>
         </CardHeader>
@@ -348,10 +348,10 @@ const Search = () => {
       {hasSearched && (
         <div className="mt-8">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               Search Results
             </h2>
-            <p className="text-slate-600">
+            <p className="text-slate-600 dark:text-slate-400">
               {searchResults.length === 0 
                 ? 'No universities found matching your criteria. Try adjusting your filters.' 
                 : `Showing ${searchResults.length} ${searchResults.length === 1 ? 'university' : 'universities'}`

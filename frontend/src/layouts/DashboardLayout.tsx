@@ -3,7 +3,7 @@ import Sidebar from '@/components/Sidebar';
 
 const DashboardLayout = () => {
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="min-h-full w-full p-4 sm:p-6 lg:p-8">

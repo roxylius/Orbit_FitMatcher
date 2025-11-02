@@ -1,14 +1,17 @@
+import lottieLogo from '@/assets/lottie-logo.json';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Target, Menu, X, LogOut, User, Bookmark } from 'lucide-react';
+import { Search, Target, Menu, X, LogOut, User, Bookmark, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth, useSavedUniversities } from '@/contexts';
+import { useAuth, useSavedUniversities, useTheme } from '@/contexts';
 import { Button } from '@/components/ui/button';
+import Lottie from 'lottie-react';
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { savedUniversities } = useSavedUniversities();
+  const { isDark, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -21,7 +24,9 @@ const Sidebar = () => {
   const menuItems = [
     {
       path: '/fit-matcher',
-      icon: Target,
+        icon: () => (
+          <Lottie animationData={lottieLogo} loop={true} style={{ width: 36, height: 36 }} />
+        ),
       label: 'Fit Matcher',
     },
     {
@@ -64,7 +69,7 @@ const Sidebar = () => {
         <div className="p-6 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Target className="w-6 h-6" />
+                <Lottie animationData={lottieLogo} loop={true} style={{ width: 36, height: 36 }} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-base font-semibold leading-tight text-white">University Matcher</p>
@@ -116,6 +121,15 @@ const Sidebar = () => {
               </div>
             </div>
           )}
+          
+          <Button
+            onClick={toggleTheme}
+            variant="ghost"
+            className="w-full justify-start !text-slate-300 hover:!text-white hover:bg-slate-700/50 transition-all"
+          >
+            {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+            {isDark ? 'Light Mode' : 'Dark Mode'}
+          </Button>
           
           <Button
             onClick={handleLogout}

@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
+import Lottie from 'lottie-react';
+import lottieLogo from '@/assets/lottie-logo.json';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -83,33 +85,34 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-950 dark:to-slate-900 p-4">
+      <Card className="w-full max-w-md shadow-xl dark:bg-slate-900 dark:border-slate-800">
         <CardHeader className="space-y-4">
           <div className="flex justify-center">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Target className="w-8 h-8 text-white" />
+              {/* Lottie animation logo */}
+              <Lottie animationData={lottieLogo} loop={true} style={{ width: 56, height: 56 }} />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl text-center dark:text-slate-100">Welcome Back</CardTitle>
+          <CardDescription className="text-center dark:text-slate-400">
             Sign in to find your perfect university match
           </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Quick Login Button for Testing */}
-          <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+          <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-amber-900">
+              <div className="text-sm text-amber-900 dark:text-amber-300">
                 <p className="font-semibold">Demo Account</p>
-                <p className="text-xs text-amber-700">Quick login for testing</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">Quick login for testing</p>
               </div>
               <Button
                 type="button"
                 onClick={handleQuickLogin}
                 size="sm"
                 variant="outline"
-                className="bg-white hover:bg-amber-50 border-amber-300 text-amber-900"
+                className="bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300"
                 disabled={loading}
               >
                 Quick Login
@@ -119,19 +122,19 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {success && (
-              <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+              <div className="p-3 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 {success}
               </div>
             )}
             
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="dark:text-slate-300">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -139,12 +142,12 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="h-11"
+                className="h-11 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="dark:text-slate-300">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -153,12 +156,12 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  className="h-11 pr-10"
+                  className="h-11 pr-10 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                   disabled={loading}
                 >
                   {showPassword ? (
@@ -173,7 +176,7 @@ const Login = () => {
             <div className="text-right">
               <Link
                 to="/forgot-password"
-                className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
               >
                 Forgot password?
               </Link>
@@ -181,7 +184,7 @@ const Login = () => {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-600 dark:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700"
               disabled={loading}
             >
               {loading ? (
@@ -194,9 +197,9 @@ const Login = () => {
               )}
             </Button>
 
-            <p className="text-center text-sm text-slate-600">
+            <p className="text-center text-sm text-slate-600 dark:text-slate-400">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
+              <Link to="/signup" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium hover:underline">
                 Sign up
               </Link>
             </p>

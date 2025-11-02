@@ -109,47 +109,47 @@ const FitMatcher = () => {
   return (
     <div className="animate-in fade-in duration-500">
       <div className="mb-6 lg:mb-8 pt-12 lg:pt-0">
-        <div className="inline-block px-4 py-1 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full mb-3">
-          <span className="text-sm font-semibold text-blue-700">AI-Powered Matching</span>
+        <div className="inline-block px-4 py-1 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full mb-3">
+          <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">AI-Powered Matching</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-2">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-2">
           Fit Matcher
         </h1>
-        <p className="text-slate-600 text-base sm:text-lg">
+        <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
           Find universities that match your academic profile and career goals
         </p>
       </div>
 
       {metadataLoading && (
         <div className="flex items-center justify-center py-8">
-          <div className="flex items-center gap-3 text-slate-600">
-            <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+          <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
+            <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 border-t-blue-600 rounded-full animate-spin" />
             <span>Loading form options...</span>
           </div>
         </div>
       )}
 
-      <Card className="max-w-5xl shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="max-w-5xl shadow-xl border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl">Your Academic Profile</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-2xl dark:text-slate-100">Your Academic Profile</CardTitle>
+          <CardDescription className="text-base dark:text-slate-400">
             Fill in your details to get personalized university recommendations
           </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Quick Fill Button for Testing */}
-          <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+          <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-amber-900">
+              <div className="text-sm text-amber-900 dark:text-amber-300">
                 <p className="font-semibold">Demo Profile</p>
-                <p className="text-xs text-amber-700">Quick fill form with sample data</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">Quick fill form with sample data</p>
               </div>
               <Button
                 type="button"
                 onClick={handleQuickFill}
                 size="sm"
                 variant="outline"
-                className="bg-white hover:bg-amber-50 border-amber-300 text-amber-900"
+                className="bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300"
                 disabled={loading || metadataLoading}
               >
                 Quick Fill
@@ -347,15 +347,15 @@ const FitMatcher = () => {
                   </Select>
                 </div>
 
-                <div className="sm:col-span-2 flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
+                <div className="sm:col-span-2 flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <input
                     type="checkbox"
                     id="visa_required"
                     checked={formData.visa_required}
                     onChange={(e) => setFormData({ ...formData, visa_required: e.target.checked })}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700"
                   />
-                  <Label htmlFor="visa_required" className="cursor-pointer font-normal">
+                  <Label htmlFor="visa_required" className="cursor-pointer font-normal dark:text-slate-300">
                     I require visa sponsorship
                   </Label>
                 </div>
@@ -380,10 +380,10 @@ const FitMatcher = () => {
       {hasMatched && (
         <div className="mt-8">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               Your Matches
             </h2>
-            <p className="text-slate-600">
+            <p className="text-slate-600 dark:text-slate-400">
               {matchResults.length === 0 
                 ? 'No matching universities found. Try adjusting your profile details or consider alternative programs.' 
                 : `Found ${matchResults.length} ${matchResults.length === 1 ? 'match' : 'matches'} based on your profile`
