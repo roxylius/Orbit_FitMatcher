@@ -1,6 +1,6 @@
 import lottieLogo from '@/assets/lottie-logo.json';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Target, Menu, X, LogOut, User, Bookmark, Moon, Sun } from 'lucide-react';
+import { Search, Menu, X, LogOut, User, Bookmark, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, useSavedUniversities, useTheme } from '@/contexts';
 import { Button } from '@/components/ui/button';
