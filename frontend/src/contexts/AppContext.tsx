@@ -2,6 +2,9 @@ import { createContext, useContext, useState, useEffect, useLayoutEffect } from 
 import type { ReactNode } from 'react';
 import { API_BASE_URL } from '@/lib/config';
 
+// Cache key for user data
+const USER_CACHE_KEY = 'cached_user';
+
 //  TYPES 
 
 export interface User {
@@ -162,6 +165,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
+        // Check localStorage first for instant UI
+        const cachedUser = localStorage.getItem(USER_CACHE_KEY);
+        if (cachedUser) {
+          setUser(JSON.parse(cachedUser));
+          setLoading(false);
+          return; // Exit early - no backend call needed!
+        }
+
+        // Only call backend if no cached user exists
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {
           credentials: 'include',
         });
@@ -169,12 +181,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
+          
+          // Cache user data for next time
+          localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
         } else {
           setUser(null);
+          localStorage.removeItem(USER_CACHE_KEY);
         }
       } catch (error) {
         console.error('Auth verification error:', error);
         setUser(null);
+        localStorage.removeItem(USER_CACHE_KEY);
       } finally {
         setLoading(false);
       }
@@ -198,6 +215,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const data = await response.json();
     setUser(data.user);
+    
+    // Cache user data
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
   };
 
   const signup = async (email: string, password: string, name?: string) => {
@@ -215,6 +235,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const data = await response.json();
     setUser(data.user);
+    
+    // Cache user data
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
   };
 
   const logout = async () => {
@@ -223,6 +246,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       credentials: 'include',
     });
     setUser(null);
+    
+    // Clear user cache
+    localStorage.removeItem(USER_CACHE_KEY);
     
     // Clear all state on logout
     clearAllSaved();
